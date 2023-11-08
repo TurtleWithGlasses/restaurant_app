@@ -1,7 +1,7 @@
 import tkinter as tk
 
 window = tk.Tk()
-window.geometry("1200x600")
+window.geometry("1200x950")
 window.title("Restaurant Order App")
 
 welcome_frame = tk.Frame(window)
