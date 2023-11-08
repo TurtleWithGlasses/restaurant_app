@@ -132,4 +132,34 @@ food_buttons = [ButtonForFood(food_frame, number) for number in range(1, 10)]
 drink_buttons = [ButtonForDrinks(drink_frame, number) for number in range(1, 10)]
 dessert_buttons = [ButtonForDesserts(dessert_frame, number) for number in range(1, 10)]
 
+
+food_label = tk.Label(window, text="Foods (incl. VAT): $0.00", font=("Arial", 16))
+food_label.grid(row=10, column=0, columnspan=3, pady=20)
+drinks_label = tk.Label(window, text="Drinks (incl. VAT): $0.00", font=("Arial", 16))
+drinks_label.grid(row=11, column=0, columnspan=3, pady=20)
+desserts_label = tk.Label(window, text="Desserts (incl. VAT): $0.00", font=("Arial", 16))
+desserts_label.grid(row=12, column=0, columnspan=3, pady=20)
+total_label = tk.Label(window, text="Total (incl. VAT): $0.00", font=("Arial", 16))
+total_label.grid(row=13, column=0, columnspan=3, pady=20)
+
+# Function to calculate the total including VAT
+def calculate_total():
+    food_total = sum(button.value * food_dict[button.food_name] for button in food_buttons)
+    drink_total = sum(button.value * drink_dict[button.drink_name] for button in drink_buttons)
+    dessert_total = sum(button.value * dessert_dict[button.dessert_name] for button in dessert_buttons)
+
+    total = food_total + drink_total + dessert_total
+    vat = total * 0.18
+    total_including_vat = total + vat
+
+    food_label.config(text=f"Foods (incl. VAT): ${food_total:.2f}")
+    drinks_label.config(text=f"Drinks (incl. VAT): ${drink_total:.2f}")
+    desserts_label.config(text=f"Desserts (incl. VAT): ${dessert_total:.2f}")
+    total_label.config(text=f"Total (incl. VAT): ${total_including_vat:.2f}")
+
+# Create a Calculate Total button
+calculate_button = tk.Button(window, text="Calculate Total", command=calculate_total, font=("Arial", 16))
+calculate_button.grid(row=3, column=0, columnspan=3, pady=10)
+
+
 window.mainloop()
