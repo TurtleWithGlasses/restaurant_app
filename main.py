@@ -1,4 +1,6 @@
 import tkinter as tk
+import csv
+from datetime import datetime
 
 window = tk.Tk()
 window.geometry("1200x950")
@@ -31,6 +33,8 @@ desserts_label.grid(row=0, column=1)
 food_dict = {"Hamburger": 15, "Cheeseburger": 10, "Steak": 20, "Pizza": 12, "Tuna Sandwich": 10, "Cheese Sandwich": 7, "Tuna Salad": 8, "Fish Salad": 10, "Pasta": 12}
 drink_dict = {"Water": 2, "Coke": 5, "Orange Juice": 3, "Coffee": 7, "Beer": 5, "Wine": 12, "Sprite": 5, "Whiskey": 15, "Dr Pepper": 10}
 dessert_dict = {"Apple Pie": 5, "Cheesecake": 4, "Brownie": 5, "Banana Bread": 7, "Milkshake": 5, "Baklava": 10, "Orange Cake": 5, "Fresh Fruits": 7, "Doughnuts": 8}
+
+order_number = 1
 
 class ButtonForFood:
     def __init__(self, master, number):
@@ -133,17 +137,24 @@ drink_buttons = [ButtonForDrinks(drink_frame, number) for number in range(1, 10)
 dessert_buttons = [ButtonForDesserts(dessert_frame, number) for number in range(1, 10)]
 
 
-food_label = tk.Label(window, text="Foods (incl. VAT): $0.00", font=("Arial", 16))
+food_label = tk.Label(window, text="Foods: $0.00", font=("Arial", 16))
 food_label.grid(row=10, column=0, columnspan=3, pady=20)
-drinks_label = tk.Label(window, text="Drinks (incl. VAT): $0.00", font=("Arial", 16))
+drinks_label = tk.Label(window, text="Drinks: $0.00", font=("Arial", 16))
 drinks_label.grid(row=11, column=0, columnspan=3, pady=20)
-desserts_label = tk.Label(window, text="Desserts (incl. VAT): $0.00", font=("Arial", 16))
+desserts_label = tk.Label(window, text="Desserts: $0.00", font=("Arial", 16))
 desserts_label.grid(row=12, column=0, columnspan=3, pady=20)
 total_label = tk.Label(window, text="Total (incl. VAT): $0.00", font=("Arial", 16))
 total_label.grid(row=13, column=0, columnspan=3, pady=20)
 
 # Function to calculate the total including VAT
-def calculate_total():
+def calculate_and_save_order():
+    global order_number  # Access the global order number
+    order_number_str = f"{order_number:04d}"  # Format the order number as "0000"
+
+    # Get the current date and time
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Calculate the order total
     food_total = sum(button.value * food_dict[button.food_name] for button in food_buttons)
     drink_total = sum(button.value * drink_dict[button.drink_name] for button in drink_buttons)
     dessert_total = sum(button.value * dessert_dict[button.dessert_name] for button in dessert_buttons)
@@ -152,14 +163,54 @@ def calculate_total():
     vat = total * 0.18
     total_including_vat = total + vat
 
-    food_label.config(text=f"Foods (incl. VAT): ${food_total:.2f}")
-    drinks_label.config(text=f"Drinks (incl. VAT): ${drink_total:.2f}")
-    desserts_label.config(text=f"Desserts (incl. VAT): ${dessert_total:.2f}")
+    food_label.config(text=f"Foods: ${food_total:.2f}")
+    drinks_label.config(text=f"Drinks: ${drink_total:.2f}")
+    desserts_label.config(text=f"Desserts: ${dessert_total:.2f}")
     total_label.config(text=f"Total (incl. VAT): ${total_including_vat:.2f}")
 
-# Create a Calculate Total button
-calculate_button = tk.Button(window, text="Calculate Total", command=calculate_total, font=("Arial", 16))
-calculate_button.grid(row=3, column=0, columnspan=3, pady=10)
+    # Save the order to the CSV file
+    with open("orders.csv", mode="a", newline='') as file:
+        writer = csv.writer(file)
+        if file.tell() == 0:
+            writer.writerow(["Order Number", "Date & Time", "Item", "Quantity", "Price"])
 
+        for button in food_buttons:
+            if button.value > 0:
+                writer.writerow([order_number_str, current_datetime, button.food_name, button.value, button.food_price])
+
+        for button in drink_buttons:
+            if button.value > 0:
+                writer.writerow([order_number_str, current_datetime, button.drink_name, button.value, button.drink_price])
+
+        for button in dessert_buttons:
+            if button.value > 0:
+                writer.writerow([order_number_str, current_datetime, button.dessert_name, button.value, button.dessert_price])
+
+    print(f"Order {order_number_str} saved to orders.csv")
+
+    # Reset the food, drink, and dessert selections to 0
+    for button in food_buttons:
+        button.value = 0
+        button.label.config(text=str(button.value))
+
+    for button in drink_buttons:
+        button.value = 0
+        button.label.config(text=str(button.value))
+
+    for button in dessert_buttons:
+        button.value = 0
+        button.label.config(text=str(button.value))
+
+    # Increment the order number
+    order_number += 1
+    order_label.config(text=f"Order #{order_number_str}")  # Update the order label
+
+# Create a Calculate & Save Order button
+calculate_and_save_button = tk.Button(window, text="Calculate & Save Order", command=calculate_and_save_order, font=("Arial", 16))
+calculate_and_save_button.grid(row=3, column=0, columnspan=3, pady=10)
+
+# Create a label to display the order number
+order_label = tk.Label(window, text=f"Order #{order_number:04d}", font=("Arial", 16))
+order_label.grid(row=5, column=0, columnspan=3, pady=10)
 
 window.mainloop()
