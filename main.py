@@ -148,13 +148,13 @@ total_label.grid(row=13, column=0, columnspan=3, pady=20)
 
 # Function to calculate the total including VAT
 def calculate_and_save_order():
-    global order_number  # Access the global order number
-    order_number_str = f"{order_number:04d}"  # Format the order number as "0000"
-
-    # Get the current date and time
+    global order_number
+    order_number_str = f"{order_number:04d}"
     current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Calculate the order total
+    # Define the initial status as "Being Prepared"
+    status = "Being Prepared"
+
     food_total = sum(button.value * food_dict[button.food_name] for button in food_buttons)
     drink_total = sum(button.value * drink_dict[button.drink_name] for button in drink_buttons)
     dessert_total = sum(button.value * dessert_dict[button.dessert_name] for button in dessert_buttons)
@@ -168,27 +168,25 @@ def calculate_and_save_order():
     desserts_label.config(text=f"Desserts: ${dessert_total:.2f}")
     total_label.config(text=f"Total (incl. VAT): ${total_including_vat:.2f}")
 
-    # Save the order to the CSV file
     with open("orders.csv", mode="a", newline='') as file:
         writer = csv.writer(file)
         if file.tell() == 0:
-            writer.writerow(["Order Number", "Date & Time", "Item", "Quantity", "Price"])
+            writer.writerow(["Order Number", "Date & Time", "Item", "Quantity", "Price", "Status"])
 
         for button in food_buttons:
             if button.value > 0:
-                writer.writerow([order_number_str, current_datetime, button.food_name, button.value, button.food_price])
+                writer.writerow([order_number_str, current_datetime, button.food_name, button.value, button.food_price, status])
 
         for button in drink_buttons:
             if button.value > 0:
-                writer.writerow([order_number_str, current_datetime, button.drink_name, button.value, button.drink_price])
+                writer.writerow([order_number_str, current_datetime, button.drink_name, button.value, button.drink_price, status])
 
         for button in dessert_buttons:
             if button.value > 0:
-                writer.writerow([order_number_str, current_datetime, button.dessert_name, button.value, button.dessert_price])
+                writer.writerow([order_number_str, current_datetime, button.dessert_name, button.value, button.dessert_price, status])
 
     print(f"Order {order_number_str} saved to orders.csv")
 
-    # Reset the food, drink, and dessert selections to 0
     for button in food_buttons:
         button.value = 0
         button.label.config(text=str(button.value))
@@ -201,9 +199,8 @@ def calculate_and_save_order():
         button.value = 0
         button.label.config(text=str(button.value))
 
-    # Increment the order number
     order_number += 1
-    order_label.config(text=f"Order #{order_number_str}")  # Update the order label
+    order_label.config(text=f"Order #{order_number_str}")
 
 # Create a Calculate & Save Order button
 calculate_and_save_button = tk.Button(window, text="Calculate & Save Order", command=calculate_and_save_order, font=("Arial", 16))
