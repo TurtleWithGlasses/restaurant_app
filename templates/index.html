@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Order App</title>
+    <style>
+        .container {
+            width: 60%;
+            margin: auto;
+        }
+        h1 {
+            text-align: left;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .item-row label {
+            flex: 2;
+            text-align: left;
+            margin-right: 5px;
+        }
+        .item-row div {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .item-row input {
+            width: 40px;
+            text-align: center;
+        }
+        button {
+            margin: 0 2px;
+        }
+        .totals {
+            margin-top: 30px;
+        }
+        .calculate-button {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .worker-response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 2px solid #ccc;
+            text-align: center;
+            font-size: 18px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Restaurant Order App</h1>
+
+        <form action="{{ url_for('calculate') }}" method="post">
+            <!-- Food Section -->
+            <div class="section">
+                <h2>Foods</h2>
+                {% for item_name, item_price in food_dict.items() %}
+                <div class="item-row">
+                    <label>{{ item_name }} (${{ item_price }})</label>
+                    <div>
+                        <button type="button" onclick="decrement('food_{{ item_name }}')">-</button>
+                        <input type="text" name="food_{{ item_name }}" id="food_{{ item_name }}" value="0">
+                        <button type="button" onclick="increment('food_{{ item_name }}')">+</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Drink Section -->
+            <div class="section">
+                <h2>Drinks</h2>
+                {% for item_name, item_price in drink_dict.items() %}
+                <div class="item-row">
+                    <label>{{ item_name }} (${{ item_price }})</label>
+                    <div>
+                        <button type="button" onclick="decrement('drink_{{ item_name }}')">-</button>
+                        <input type="text" name="drink_{{ item_name }}" id="drink_{{ item_name }}" value="0">
+                        <button type="button" onclick="increment('drink_{{ item_name }}')">+</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Dessert Section -->
+            <div class="section">
+                <h2>Desserts</h2>
+                {% for item_name, item_price in dessert_dict.items() %}
+                <div class="item-row">
+                    <label>{{ item_name }} (${{ item_price }})</label>
+                    <div>
+                        <button type="button" onclick="decrement('dessert_{{ item_name }}')">-</button>
+                        <input type="text" name="dessert_{{ item_name }}" id="dessert_{{ item_name }}" value="0">
+                        <button type="button" onclick="increment('dessert_{{ item_name }}')">+</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Totals Section -->
+            <div class="section totals">
+                <h3>Totals</h3>
+                <!-- These will only display if defined in the context -->
+                <p>Food Total: ${{ food_total }}</p>
+                <p>Drink Total: ${{ drink_total }}</p>
+                <p>Dessert Total: ${{ dessert_total }}</p>
+                <p>Total (incl. VAT): ${{ total_including_vat }}</p>
+            </div>
+
+            <!-- Calculate Button -->
+            <div class="calculate-button">
+                <button type="submit">Calculate & Save Order</button>
+            </div>
+        </form>
+
+        <!-- Worker Response -->
+        {% if worker_response %}
+        <div class="worker-response">
+            <h3>{{ worker_response }}</h3>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function increment(id) {
+            let element = document.getElementById(id);
+            element.value = parseInt(element.value) + 1;
+        }
+
+        function decrement(id) {
+            let element = document.getElementById(id);
+            if (parseInt(element.value) > 0) {
+                element.value = parseInt(element.value) - 1;
+            }
+        }
+    </script>
+</body>
+</html>
