@@ -2,6 +2,7 @@ import sys
 import json
 import time
 
+# preparation interval for each product
 preparation_times = {
     "Hamburger": 10, "Cheeseburger": 8, "Steak": 15, "Pizza": 12,
     "Tuna Sandwich": 7, "Cheese Sandwich": 5, "Tuna Salad": 6,
@@ -13,6 +14,7 @@ preparation_times = {
     "Fresh Fruits": 5, "Doughnuts": 9
 }
 
+# worker remains idle
 worker_busy = False
 
 def process_order(order):
@@ -27,13 +29,15 @@ def process_order(order):
 
     total_time = 0
 
+    # getting the total item and quantity that was received with the order
     for item, quantity in order.items():
         if item in preparation_times:
             item_time = preparation_times[item] * quantity
             print(f"Preparing item {item}: {item_time} seconds")
             time.sleep(item_time)
             total_time += item_time
-        
+
+    # when the order is processed, worker goes back to idle
     print("Order is ready!")
     worker_busy = False
     return "Order Ready"
