@@ -3,113 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant Order App</title>
+    <title>Restaurant Management App</title>
     <style>
         .container {
-            width: 60%;
+            width: 90%;
             margin: auto;
         }
+
         h1 {
-            text-align: left;
+            text-align: center;
+            margin-bottom: 40px;
         }
+
+        .sections-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+
         .section {
+            flex: 1;
+            padding: 20px;
+            border: 1px solid #ccc;
+            margin: 0 10px;
+            border-radius: 10px;
+        }
+
+        .section h2 {
+            text-align: center;
             margin-bottom: 20px;
         }
+
+        .items-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .item-names,
+        .item-controls {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .item-controls {
+            text-align: right;
+        }
+
         .item-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
+
         .item-row label {
             flex: 2;
             text-align: left;
-            margin-right: 5px;
         }
+
         .item-row div {
             flex: 1;
             display: flex;
             justify-content: flex-end;
             align-items: center;
         }
+
         .item-row input {
             width: 40px;
             text-align: center;
         }
+
         button {
-            margin: 0 2px;
+            margin: 0 50px; /* Adjust this if needed */
         }
-        .totals {
-            margin-top: 30px;
-        }
+
+        .totals,
         .calculate-button {
+            width: 50%;
+            margin: 20px auto;
             text-align: center;
-            margin-top: 20px;
-        }
-        .worker-response {
-            margin-top: 20px;
+            border: 1px solid #ccc;
             padding: 10px;
-            border: 2px solid #ccc;
-            text-align: center;
-            font-size: 18px;
-            color: green;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Restaurant Order App</h1>
-
+        <h1>Restaurant Management App</h1>
+        
         <form action="{{ url_for('calculate') }}" method="post">
-            <!-- Food Section -->
-            <div class="section">
-                <h2>Foods</h2>
-                {% for item_name, item_price in food_dict.items() %}
-                <div class="item-row">
-                    <label>{{ item_name }} (${{ item_price }})</label>
-                    <div>
-                        <button type="button" onclick="decrement('food_{{ item_name }}')">-</button>
-                        <input type="text" name="food_{{ item_name }}" id="food_{{ item_name }}" value="0">
-                        <button type="button" onclick="increment('food_{{ item_name }}')">+</button>
+            <div class="sections-container">
+                <!-- Food Section -->
+                <div class="section">
+                    <h2>Foods</h2>
+                    <div class="items-container">
+                        <div class="item-names">
+                            {% for item_name, item_price in food_dict.items() %}
+                            <div class="item-row">
+                                <label>{{ item_name }} (${{ item_price }})</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="item-controls">
+                            {% for item_name, item_price in food_dict.items() %}
+                            <div class="item-row">
+                                <button type="button" onclick="decrement('food_{{ item_name }}')">-</button>
+                                <input type="text" name="food_{{ item_name }}" id="food_{{ item_name }}" value="0">
+                                <button type="button" onclick="increment('food_{{ item_name }}')">+</button>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
-                {% endfor %}
-            </div>
 
-            <!-- Drink Section -->
-            <div class="section">
-                <h2>Drinks</h2>
-                {% for item_name, item_price in drink_dict.items() %}
-                <div class="item-row">
-                    <label>{{ item_name }} (${{ item_price }})</label>
-                    <div>
-                        <button type="button" onclick="decrement('drink_{{ item_name }}')">-</button>
-                        <input type="text" name="drink_{{ item_name }}" id="drink_{{ item_name }}" value="0">
-                        <button type="button" onclick="increment('drink_{{ item_name }}')">+</button>
+                <!-- Drink Section -->
+                <div class="section">
+                    <h2>Drinks</h2>
+                    <div class="items-container">
+                        <div class="item-names">
+                            {% for item_name, item_price in drink_dict.items() %}
+                            <div class="item-row">
+                                <label>{{ item_name }} (${{ item_price }})</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="item-controls">
+                            {% for item_name, item_price in drink_dict.items() %}
+                            <div class="item-row">
+                                <button type="button" onclick="decrement('drink_{{ item_name }}')">-</button>
+                                <input type="text" name="drink_{{ item_name }}" id="drink_{{ item_name }}" value="0">
+                                <button type="button" onclick="increment('drink_{{ item_name }}')">+</button>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
-                {% endfor %}
-            </div>
 
-            <!-- Dessert Section -->
-            <div class="section">
-                <h2>Desserts</h2>
-                {% for item_name, item_price in dessert_dict.items() %}
-                <div class="item-row">
-                    <label>{{ item_name }} (${{ item_price }})</label>
-                    <div>
-                        <button type="button" onclick="decrement('dessert_{{ item_name }}')">-</button>
-                        <input type="text" name="dessert_{{ item_name }}" id="dessert_{{ item_name }}" value="0">
-                        <button type="button" onclick="increment('dessert_{{ item_name }}')">+</button>
+                <!-- Dessert Section -->
+                <div class="section">
+                    <h2>Desserts</h2>
+                    <div class="items-container">
+                        <div class="item-names">
+                            {% for item_name, item_price in dessert_dict.items() %}
+                            <div class="item-row">
+                                <label>{{ item_name }} (${{ item_price }})</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="item-controls">
+                            {% for item_name, item_price in dessert_dict.items() %}
+                            <div class="item-row">
+                                <button type="button" onclick="decrement('dessert_{{ item_name }}')">-</button>
+                                <input type="text" name="dessert_{{ item_name }}" id="dessert_{{ item_name }}" value="0">
+                                <button type="button" onclick="increment('dessert_{{ item_name }}')">+</button>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
-                {% endfor %}
             </div>
 
             <!-- Totals Section -->
-            <div class="section totals">
+            <div class="totals">
                 <h3>Totals</h3>
-                <!-- These will only display if defined in the context -->
                 <p>Food Total: ${{ food_total }}</p>
                 <p>Drink Total: ${{ drink_total }}</p>
                 <p>Dessert Total: ${{ dessert_total }}</p>
@@ -122,6 +179,18 @@
             </div>
         </form>
 
+        <!-- Selected Items and Countdown -->
+        {% if preparation_details %}
+        <div class="selected-items">
+            <h3>Selected Items and Preparation Time</h3>
+            <ul>
+                {% for item, time in preparation_details.items() %}
+                <li>{{ item }}: <span id="countdown-{{ item }}">{{ time }}</span> seconds</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
         <!-- Worker Response -->
         {% if worker_response %}
         <div class="worker-response">
@@ -133,15 +202,54 @@
     <script>
         function increment(id) {
             let element = document.getElementById(id);
-            element.value = parseInt(element.value) + 1;
+            let value = parseInt(element.value, 10);
+            value = isNaN(value) ? 0 : value;
+            value++;
+            element.value = value;
         }
 
         function decrement(id) {
             let element = document.getElementById(id);
-            if (parseInt(element.value) > 0) {
-                element.value = parseInt(element.value) - 1;
+            let value = parseInt(element.value, 10);
+            value = isNaN(value) ? 0 : value;
+            value = value > 0 ? value - 1 : 0;
+            element.value = value;
+        }
+
+        function countdown(id, time) {
+            let countdownElement = document.getElementById(id);
+            let interval = setInterval(function() {
+                if (time > 0) {
+                    time--;
+                    countdownElement.innerText = time;
+                } else {
+                    clearInterval(interval);
+                    checkIfAllCountdownsComplete();
+                }
+            }, 1000);
+        }
+
+        function checkIfAllCountdownsComplete() {
+            const countdowns = document.querySelectorAll('[id^="countdown-"]');
+            let allComplete = true;
+
+            countdowns.forEach(function(countdown) {
+                if (parseInt(countdown.innerText) > 0) {
+                    allComplete = false;
+                }
+            });
+
+            if (allComplete) {
+                document.querySelector('.worker-response').innerHTML = '<h3>Order Ready</h3>';
             }
         }
+
+        // Initialize countdowns for each item
+        {% if preparation_details %}
+        {% for item, time in preparation_details.items() %}
+        countdown("countdown-{{ item }}", {{ time }});
+        {% endfor %}
+        {% endif %}
     </script>
 </body>
 </html>

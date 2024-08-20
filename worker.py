@@ -22,28 +22,29 @@ def process_order(order):
 
     if worker_busy:
         print("Worker is busy")
-        return "BUSY"
+        return {"status":"BUSY"}
     
     worker_busy = True
-    print(f"Processing order: {order}")
-
-    total_time = 0
+    total_preparation_time = 0
+    preparation_details = {}
 
     # getting the total item and quantity that was received with the order
     for item, quantity in order.items():
         if item in preparation_times:
             item_time = preparation_times[item] * quantity
-            print(f"Preparing item {item}: {item_time} seconds")
-            time.sleep(item_time)
-            total_time += item_time
+            preparation_details[item] = item_time
+            total_preparation_time += item_time
 
+    time.sleep(total_preparation_time)
     # when the order is processed, worker goes back to idle
-    print("Order is ready!")
     worker_busy = False
-    return "Order Ready"
+    return {"status": "Order Ready","preparation_details": preparation_details}
 
 if __name__ == "__main__":
     order_data = sys.stdin.read()
-    order = json.loads(order_data)
-    result = process_order(order)
-    print(result)
+    try:        
+        order = json.loads(order_data)
+        result = process_order(order)
+        print(json.dumps(result))
+    except json.JSONDecodeError as e:
+        print(json.dumps({"status": "Error", "message": str(e)}))
