@@ -74,7 +74,7 @@
         }
 
         button {
-            margin: 0 50px; /* Adjust this if needed */
+            margin: 0 50px;
         }
 
         .totals,
@@ -85,6 +85,22 @@
             border: 1px solid #ccc;
             padding: 10px;
             border-radius: 10px;
+        }
+
+        .preparing {
+            color: red;
+            font-weight: bold;
+        }
+
+        .ready {
+            color: green;
+            font-weight: normal;
+        }
+
+        .order-ready {
+            color: green;
+            font-weight: bold;
+            font-size: 1.5em;
         }
     </style>
 </head>
@@ -185,21 +201,25 @@
             <h3>Selected Items and Preparation Time</h3>
             <ul>
                 {% for item, time in preparation_details.items() %}
-                <li>{{ item }}: <span id="countdown-{{ item }}">{{ time }}</span> seconds</li>
+                <li class="preparing" id="item-{{ item }}">
+                    {{ item }}: <span id="countdown-{{ item }}">{{ time }}</span> seconds
+                </li>
                 {% endfor %}
             </ul>
         </div>
         {% endif %}
 
         <!-- Worker Response -->
-        {% if worker_response %}
         <div class="worker-response">
+            {% if worker_response %}
             <h3>{{ worker_response }}</h3>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 
     <script>
+        let countdowns = {};  // Track the countdowns
+
         function increment(id) {
             let element = document.getElementById(id);
             let value = parseInt(element.value, 10);
@@ -218,30 +238,29 @@
 
         function countdown(id, time) {
             let countdownElement = document.getElementById(id);
+            let itemElement = document.getElementById(`item-${id.split('-')[1]}`);
+            countdowns[id] = time;  // Initialize countdown status
+
             let interval = setInterval(function() {
-                if (time > 0) {
-                    time--;
-                    countdownElement.innerText = time;
+                if (countdowns[id] > 0) {
+                    countdowns[id]--;
+                    countdownElement.innerText = countdowns[id];
                 } else {
                     clearInterval(interval);
-                    checkIfAllCountdownsComplete();
+                    itemElement.classList.remove('preparing');
+                    itemElement.classList.add('ready');
+                    checkIfAllItemsReady();
                 }
             }, 1000);
         }
 
-        function checkIfAllCountdownsComplete() {
-            const countdowns = document.querySelectorAll('[id^="countdown-"]');
-            let allComplete = true;
-
-            countdowns.forEach(function(countdown) {
-                if (parseInt(countdown.innerText) > 0) {
-                    allComplete = false;
+        function checkIfAllItemsReady() {
+            for (let id in countdowns) {
+                if (countdowns[id] > 0) {
+                    return;  // Exit if any item is still counting down
                 }
-            });
-
-            if (allComplete) {
-                document.querySelector('.worker-response').innerHTML = '<h3>Order Ready</h3>';
             }
+            document.querySelector('.worker-response').innerHTML = '<h3 class="order-ready">✔ Order Ready</h3>';
         }
 
         // Initialize countdowns for each item
