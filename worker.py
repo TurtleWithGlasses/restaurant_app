@@ -32,7 +32,7 @@ def process_order(order):
         if item in preparation_times:
             item_time = preparation_times[item] * quantity
             time.sleep(item_time)  # Simulate the preparation time
-            preparation_details[item] = "READY"  # Update status to READY
+            preparation_details[f"{item} x{quantity}" if quantity > 1 else item] = "READY"  # Update status to READY
 
     worker_busy = False
     return {"status": "Order Ready","preparation_details": preparation_details}
