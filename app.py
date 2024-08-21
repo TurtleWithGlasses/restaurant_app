@@ -25,6 +25,7 @@ def send_order_to_worker(order):
     if result.returncode == 0:
         return json.loads(result.stdout.strip())
     else:
+        print("Worker error output:", result.stderr.strip())
         return {"status": "Error", "preparation_details": {}}
 
 @app.route("/")
@@ -94,6 +95,25 @@ def calculate():
 
     # Send the order to worker.py
     worker_response = send_order_to_worker(selected_items)
+
+    # handle worker response
+    if worker_response["status"] == "Order Ready":
+        print("Order is ready, generating receipt...")
+        # generate the receipt details
+        receipt = {
+            "order_number": order_number,
+            "date": order.date,
+            "time": order.time,
+            "order_items": [
+                {"name": item.item_name, "quantitiy": item.quantitiy, "price": item.price} for item in order.items
+            ],
+            "total": total,
+            "vat": vat,
+            "total_including_vat": total_including_vat
+        }
+        print("Receipt data:", receipt)
+    else:
+        print("Worker did not complete the order, response:", worker_response)
 
     # Generate the receipt details
     receipt = {
