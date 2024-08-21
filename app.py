@@ -35,16 +35,19 @@ def calculate():
         quantity = int(request.form.get(f"food_{item}", 0))
         if quantity > 0:
             selected_items[item] = quantity
+            food_total += quantity * price
 
     for item, price in drink_dict.items():
         quantity = int(request.form.get(f"drink_{item}", 0))
         if quantity > 0:
             selected_items[item] = quantity
+            drink_total += quantity * price
 
     for item, price in dessert_dict.items():
         quantity = int(request.form.get(f"dessert_{item}", 0))
         if quantity > 0:
             selected_items[item] = quantity
+            dessert_total += quantity * price
     
     total = food_total + drink_total + dessert_total
     vat = total *0.18

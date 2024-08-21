@@ -94,7 +94,7 @@
 
         .ready {
             color: green;
-            font-weight: normal;
+            font-weight: bold;
         }
 
         .order-ready {
@@ -181,6 +181,7 @@
             </div>
 
             <!-- Totals Section -->
+            <!-- Totals Section -->
             <div class="totals">
                 <h3>Totals</h3>
                 <p>Food Total: ${{ food_total }}</p>
@@ -189,20 +190,21 @@
                 <p>Total (incl. VAT): ${{ total_including_vat }}</p>
             </div>
 
+
             <!-- Calculate Button -->
             <div class="calculate-button">
                 <button type="submit">Calculate & Save Order</button>
             </div>
         </form>
 
-        <!-- Selected Items and Countdown -->
+        <!-- Selected Items and Status -->
         {% if preparation_details %}
         <div class="selected-items">
-            <h3>Selected Items and Preparation Time</h3>
+            <h3>Selected Items and Status</h3>
             <ul>
-                {% for item, time in preparation_details.items() %}
-                <li class="preparing" id="item-{{ item }}">
-                    {{ item }}: <span id="countdown-{{ item }}">{{ time }}</span> seconds
+                {% for item, status in preparation_details.items() %}
+                <li class="{{ 'ready' if status == 'READY' else 'preparing' }}">
+                    {{ item }}: {{ status }}
                 </li>
                 {% endfor %}
             </ul>
@@ -235,40 +237,6 @@
             value = value > 0 ? value - 1 : 0;
             element.value = value;
         }
-
-        function countdown(id, time) {
-            let countdownElement = document.getElementById(id);
-            let itemElement = document.getElementById(`item-${id.split('-')[1]}`);
-            countdowns[id] = time;  // Initialize countdown status
-
-            let interval = setInterval(function() {
-                if (countdowns[id] > 0) {
-                    countdowns[id]--;
-                    countdownElement.innerText = countdowns[id];
-                } else {
-                    clearInterval(interval);
-                    itemElement.classList.remove('preparing');
-                    itemElement.classList.add('ready');
-                    checkIfAllItemsReady();
-                }
-            }, 1000);
-        }
-
-        function checkIfAllItemsReady() {
-            for (let id in countdowns) {
-                if (countdowns[id] > 0) {
-                    return;  // Exit if any item is still counting down
-                }
-            }
-            document.querySelector('.worker-response').innerHTML = '<h3 class="order-ready">✔ Order Ready</h3>';
-        }
-
-        // Initialize countdowns for each item
-        {% if preparation_details %}
-        {% for item, time in preparation_details.items() %}
-        countdown("countdown-{{ item }}", {{ time }});
-        {% endfor %}
-        {% endif %}
     </script>
 </body>
 </html>

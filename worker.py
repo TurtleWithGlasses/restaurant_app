@@ -25,18 +25,15 @@ def process_order(order):
         return {"status":"BUSY"}
     
     worker_busy = True
-    total_preparation_time = 0
     preparation_details = {}
 
-    # getting the total item and quantity that was received with the order
+    # Process each item in the order
     for item, quantity in order.items():
         if item in preparation_times:
             item_time = preparation_times[item] * quantity
-            preparation_details[item] = item_time
-            total_preparation_time += item_time
+            time.sleep(item_time)  # Simulate the preparation time
+            preparation_details[item] = "READY"  # Update status to READY
 
-    time.sleep(total_preparation_time)
-    # when the order is processed, worker goes back to idle
     worker_busy = False
     return {"status": "Order Ready","preparation_details": preparation_details}
 
