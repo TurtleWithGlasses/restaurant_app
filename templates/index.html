@@ -87,20 +87,26 @@
             border-radius: 10px;
         }
 
-        .preparing {
-            color: red;
-            font-weight: bold;
+        .receipt {
+            border: 1px solid black;
+            padding: 20px;
+            margin: 20px auto;
+            width: 60%;
+            border-radius: 10px;
+            text-align: left;
         }
 
-        .ready {
-            color: green;
-            font-weight: bold;
+        .receipt h2 {
+            text-align: center;
+            margin-bottom: 20px;
         }
 
-        .order-ready {
-            color: green;
-            font-weight: bold;
-            font-size: 1.5em;
+        .receipt .details {
+            margin-bottom: 10px;
+        }
+
+        .receipt .totals {
+            text-align: right;
         }
     </style>
 </head>
@@ -195,26 +201,44 @@
             </div>
         </form>
 
-        <!-- Selected Items and Status -->
-        {% if preparation_details %}
-        <div class="selected-items">
-            <h3>Selected Items and Status</h3>
+        <!-- Receipt -->
+        {% if receipt %}
+        <div class="receipt">
+            <h2>Receipt</h2>
+            <p class="details">Date: {{ receipt.date }}</p>
+            <p class="details">Time: {{ receipt.time }}</p>
+            <p class="details">Order #: {{ receipt.order_number }}</p>
+        
+            <div style="display: flex; justify-content: space-between;">
+                <div>
+                    <h3>Order details (products)</h3>
+                    <ul>
+                        {% for item, quantity, price in receipt.order_details %}
+                        <li>{{ item }} x{{ quantity }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div>
+                    <h3>Price details</h3>
+                    <ul>
+                        {% for item, quantity, price in receipt.order_details %}
+                        <li>${{ price }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        
+            <h3>Summary</h3>
             <ul>
-                {% for item, status in preparation_details.items() %}
-                <li class="{{ 'ready' if status == 'READY' else 'preparing' }}">
-                    {{ item }}: {{ status }}
-                </li>
-                {% endfor %}
+                <li>Amount: ${{ receipt.total }}</li>
+                <li>VAT (18%): ${{ receipt.vat }}</li>
+                <li><strong>Total amount: ${{ receipt.total_including_vat }}</strong></li>
             </ul>
+        
+            <p>Thank you for visiting us!</p>
         </div>
+        
         {% endif %}
-
-        <!-- Worker Response -->
-        <div class="worker-response">
-            {% if worker_response %}
-            <h3>{{ worker_response }}</h3>
-            {% endif %}
-        </div>
     </div>
 
     <script>
