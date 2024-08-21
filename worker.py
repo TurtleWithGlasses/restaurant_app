@@ -2,7 +2,7 @@ import sys
 import json
 import time
 
-# preparation interval for each product
+# Preparation interval for each product
 preparation_times = {
     "Hamburger": 10, "Cheeseburger": 8, "Steak": 15, "Pizza": 12,
     "Tuna Sandwich": 7, "Cheese Sandwich": 5, "Tuna Salad": 6,
@@ -14,7 +14,7 @@ preparation_times = {
     "Fresh Fruits": 5, "Doughnuts": 9
 }
 
-# worker remains idle
+# Worker remains idle
 worker_busy = False
 
 def process_order(order):
@@ -32,10 +32,10 @@ def process_order(order):
         if item in preparation_times:
             item_time = preparation_times[item] * quantity
             time.sleep(item_time)  # Simulate the preparation time
-            preparation_details[f"{item} x{quantity}" if quantity > 1 else item] = "READY"  # Update status to READY
+            preparation_details[item] = "READY"  # Update status to READY
 
     worker_busy = False
-    return {"status": "Order Ready","preparation_details": preparation_details}
+    return {"status": "Order Ready", "preparation_details": preparation_details}
 
 if __name__ == "__main__":
     order_data = sys.stdin.read()

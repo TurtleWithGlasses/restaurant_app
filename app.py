@@ -1,15 +1,24 @@
 from flask import Flask, render_template, request
 from menu_data import food_dict, drink_dict, dessert_dict
+from models import db, Order, OrderItem
 import json
 import subprocess
+import time
 from datetime import datetime
 
 app = Flask(__name__)
 
-order_number = 1
+# Database configuration
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///restaurant.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
 
 def send_order_to_worker(order):
-    # sends the order to the worker
+    # Sends the order to the worker
     result = subprocess.run(["python3", "worker.py"], input=json.dumps(order), text=True, capture_output=True)
     print("Raw worker output:", result.stdout.strip())
     
@@ -27,10 +36,8 @@ def index():
 
 @app.route("/calculate", methods=["POST"])
 def calculate():
-    global order_number  # Use the global order counter
-
     selected_items = {}
-    order_details = []
+
     food_total = 0
     drink_total = 0
     dessert_total = 0
@@ -40,41 +47,67 @@ def calculate():
         quantity = int(request.form.get(f"food_{item}", 0))
         if quantity > 0:
             selected_items[item] = quantity
-            order_details.append((item, quantity, price * quantity))
             food_total += price * quantity
 
     for item, price in drink_dict.items():
         quantity = int(request.form.get(f"drink_{item}", 0))
         if quantity > 0:
             selected_items[item] = quantity
-            order_details.append((item, quantity, price * quantity))
             drink_total += price * quantity
 
     for item, price in dessert_dict.items():
         quantity = int(request.form.get(f"dessert_{item}", 0))
         if quantity > 0:
             selected_items[item] = quantity
-            order_details.append((item, quantity, price * quantity))
             dessert_total += price * quantity
 
     total = food_total + drink_total + dessert_total
     vat = total * 0.18
     total_including_vat = total + vat
 
+    # Generate unique order number
+    order_number = f"ORD-{int(time.time())}"
+
+    # Save order & items to the database
+    order = Order(
+        order_number=order_number,
+        date=datetime.now().strftime("%Y-%m-%d"),
+        time=datetime.now().strftime("%H:%M:%S"),
+        total=total,
+        vat=vat,
+        total_including_vat=total_including_vat
+    )
+    db.session.add(order)
+    db.session.flush()  # Ensure order.id is available for the order items
+
+    for item, quantity in selected_items.items():
+        item_price = (food_dict.get(item) or drink_dict.get(item) or dessert_dict.get(item))
+        order_item = OrderItem(
+            order_id=order.id,
+            item_name=item,
+            quantity=quantity,
+            price=item_price * quantity
+        )
+        db.session.add(order_item)
+    
+    db.session.commit()
+
+    # Send the order to worker.py
+    worker_response = send_order_to_worker(selected_items)
+
     # Generate the receipt details
     receipt = {
-        "date": datetime.now().strftime("%Y-%m-%d"),
-        "time": datetime.now().strftime("%H:%M:%S"),
-        "order_number": f"#{order_number:04d}",
-        "order_details": order_details,
+        "order_number": order_number,
+        "date": order.date,
+        "time": order.time,
+        "order_items": [
+            {"name": item.item_name, "quantity": item.quantity, "price": item.price} for item in order.items
+        ],
         "total": total,
         "vat": vat,
         "total_including_vat": total_including_vat
     }
-    order_number += 1  # Increment the order number
-
-    # Send the order to worker.py
-    worker_response = send_order_to_worker(selected_items)
+    print("Receipt items:", receipt['order_items'])
 
     return render_template(
         "index.html",
