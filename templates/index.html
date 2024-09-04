@@ -36,17 +36,7 @@
 
         .items-container {
             display: flex;
-            justify-content: space-between;
-        }
-
-        .item-names,
-        .item-controls {
-            flex: 1;
-            margin-right: 10px;
-        }
-
-        .item-controls {
-            text-align: right;
+            flex-direction: column;
         }
 
         .item-row {
@@ -61,24 +51,19 @@
             text-align: left;
         }
 
-        .item-row div {
-            flex: 1;
+        .item-controls {
             display: flex;
+            flex: 1;
             justify-content: flex-end;
-            align-items: center;
         }
 
-        .item-row input {
+        .item-controls button, .item-controls input {
+            margin-right: 5px;
             width: 40px;
             text-align: center;
         }
 
-        button {
-            margin: 0 50px;
-        }
-
-        .totals,
-        .calculate-button {
+        .totals, .calculate-button {
             width: 50%;
             margin: 20px auto;
             text-align: center;
@@ -152,34 +137,55 @@
             margin-top: 20px;
             font-size: 1.1em;
         }
+
+        button {
+            width: 40px;
+            height: 40px;
+        }
+        .calculate-button button {
+            width: 200px; /* Set a fixed width */
+            padding: 15px; /* Add more padding for a larger button */
+            font-size: 16px;
+            background-color: #4CAF50; /* Green background */
+            color: white; /* White text */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add shadow for a more 3D look */
+            transition: background-color 0.3s ease; /* Smooth background color transition */
+            text-align: center; /* Center the text */
+        }
+
+        .calculate-button button:hover {
+            background-color: #45a049; /* Darker green on hover */
+        }
+
+        .calculate-button button:active {
+            background-color: #3e8e41; /* Even darker when clicked */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Decrease shadow */
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Restaurant Management App</h1>
-        
-        <form action="{{ url_for('calculate') }}" method="post">
+
+        <form id="orderForm">
             <div class="sections-container">
                 <!-- Food Section -->
                 <div class="section">
                     <h2>Foods</h2>
                     <div class="items-container">
-                        <div class="item-names">
-                            {% for item_name, item_price in food_dict.items() %}
-                            <div class="item-row">
-                                <label>{{ item_name }} (${{ item_price }})</label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        <div class="item-controls">
-                            {% for item_name, item_price in food_dict.items() %}
-                            <div class="item-row">
+                        {% for item_name, item_price in food_dict.items() %}
+                        <div class="item-row">
+                            <label>{{ item_name }} (${{ item_price }})</label>
+                            <div class="item-controls">
                                 <button type="button" onclick="decrement('food_{{ item_name }}')">-</button>
                                 <input type="text" name="food_{{ item_name }}" id="food_{{ item_name }}" value="0">
                                 <button type="button" onclick="increment('food_{{ item_name }}')">+</button>
                             </div>
-                            {% endfor %}
                         </div>
+                        {% endfor %}
                     </div>
                 </div>
 
@@ -187,22 +193,16 @@
                 <div class="section">
                     <h2>Drinks</h2>
                     <div class="items-container">
-                        <div class="item-names">
-                            {% for item_name, item_price in drink_dict.items() %}
-                            <div class="item-row">
-                                <label>{{ item_name }} (${{ item_price }})</label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        <div class="item-controls">
-                            {% for item_name, item_price in drink_dict.items() %}
-                            <div class="item-row">
+                        {% for item_name, item_price in drink_dict.items() %}
+                        <div class="item-row">
+                            <label>{{ item_name }} (${{ item_price }})</label>
+                            <div class="item-controls">
                                 <button type="button" onclick="decrement('drink_{{ item_name }}')">-</button>
                                 <input type="text" name="drink_{{ item_name }}" id="drink_{{ item_name }}" value="0">
                                 <button type="button" onclick="increment('drink_{{ item_name }}')">+</button>
                             </div>
-                            {% endfor %}
                         </div>
+                        {% endfor %}
                     </div>
                 </div>
 
@@ -210,22 +210,16 @@
                 <div class="section">
                     <h2>Desserts</h2>
                     <div class="items-container">
-                        <div class="item-names">
-                            {% for item_name, item_price in dessert_dict.items() %}
-                            <div class="item-row">
-                                <label>{{ item_name }} (${{ item_price }})</label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        <div class="item-controls">
-                            {% for item_name, item_price in dessert_dict.items() %}
-                            <div class="item-row">
+                        {% for item_name, item_price in dessert_dict.items() %}
+                        <div class="item-row">
+                            <label>{{ item_name }} (${{ item_price }})</label>
+                            <div class="item-controls">
                                 <button type="button" onclick="decrement('dessert_{{ item_name }}')">-</button>
                                 <input type="text" name="dessert_{{ item_name }}" id="dessert_{{ item_name }}" value="0">
                                 <button type="button" onclick="increment('dessert_{{ item_name }}')">+</button>
                             </div>
-                            {% endfor %}
                         </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -245,89 +239,88 @@
             </div>
         </form>
 
-        <!-- Selected Items and Status -->
-        {% if preparation_details %}
-        <div class="selected-items">
-            <h3>Selected Items and Status</h3>
-            <ul>
-                {% for item, status in preparation_details.items() %}
-                <li class="ready" id="item-{{ item }}">
-                    {{ item }}{% if selected_items[item] > 1 %} x{{ selected_items[item] }}{% endif %}: {{ status }}
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
+        <!-- Placeholder for order status and receipt -->
+        <div id="orderStatus"></div>
 
+        <script>
+            function increment(id) {
+                let element = document.getElementById(id);
+                let value = parseInt(element.value, 10);
+                value = isNaN(value) ? 0 : value;
+                value++;
+                element.value = value;
+            }
 
+            function decrement(id) {
+                let element = document.getElementById(id);
+                let value = parseInt(element.value, 10);
+                value = isNaN(value) ? 0 : value;
+                value = value > 0 ? value - 1 : 0;
+                element.value = value;
+            }
 
-        <!-- Worker Response -->
-        <div class="worker-response">
-            {% if worker_response %}
-            <h3 class="order-ready">✔ {{ worker_response }}</h3>
-            {% endif %}
-        </div>
+            // Event listener for form submission with AJAX
+            document.getElementById('orderForm').addEventListener('submit', function(event) {
+                event.preventDefault();  // Prevent the page from reloading
 
-        <!-- Receipt Section -->
-        {% if receipt %}
-        <div class="receipt">
-            <h2>Receipt</h2>
-            <h3>Order #: {{ receipt.order_number }}</h3>
-            <p>Date: {{ receipt.date }}</p>
-            <p>Time: {{ receipt.time }}</p>
+                const formData = new FormData(this);  // Gather form data
 
-            <div class="receipt-details">
-                <div class="products">
-                    <h4>Order Details (Products)</h4>
-                    {% for item in receipt.order_items %}
-                    <div>
-                        <span>{{ item.name }}{% if item.quantity > 1 %} x{{ item.quantity }}{% endif %}</span>
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="prices">
-                    <h4>Price Details</h4>
-                    {% for item in receipt.order_items %}
-                    <div>
-                        <span>${{ item.price }}</span>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
+                // Send the order via AJAX (Fetch API)
+                fetch('/calculate', {  
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())  // Parse the response as JSON
+                .then(data => {
+                    let orderStatus = document.getElementById('orderStatus');
+                    
+                    if (data.status === 'Order Ready') {
+                        orderStatus.innerHTML = '<h3>✔ Order is ready!</h3>';
 
-            <div class="receipt-total">
-                <p>Amount * VAT: ${{ receipt.vat }}</p>
-                <p class="total-amount">Total Amount: ${{ receipt.total_including_vat }}</p>
-            </div>
+                        // Display the receipt dynamically if it's included in the response
+                        if (data.receipt) {
+                            const receiptSection = document.createElement('div');
+                            receiptSection.classList.add('receipt');
+                            receiptSection.innerHTML = `
+                                <h2>Receipt</h2>
+                                <h3>Order #: ${data.receipt.order_number}</h3>
+                                <p>Date: ${data.receipt.date}</p>
+                                <p>Time: ${data.receipt.time}</p>
+                                <div class="receipt-details">
+                                    <div class="products">
+                                        <h4>Order Details (Products)</h4>
+                                        ${data.receipt.order_items.map(item => 
+                                            `<div>${item.name} x${item.quantity}</div>`).join('')}
+                                    </div>
+                                    <div class="prices">
+                                        <h4>Price Details</h4>
+                                        ${data.receipt.order_items.map(item => 
+                                            `<div>$${item.price}</div>`).join('')}
+                                    </div>
+                                </div>
+                                <div class="receipt-total">
+                                    <p>Amount * VAT: $${data.receipt.vat}</p>
+                                    <p class="total-amount">Total Amount: $${data.receipt.total_including_vat}</p>
+                                </div>
+                                <div class="thank-you">
+                                    <p>Thank you for visiting us!</p>
+                                </div>
+                            `;
+                            orderStatus.appendChild(receiptSection);
+                        }
 
-            <div class="thank-you">
-                <p>Thank you for visiting us!</p>
-            </div>
-        </div>
-        {% else %}
-            <h3 class="error-message">No receipt available, something went wrong.</h3>
+                        // Reset all input fields to zero after order is processed
+                        document.querySelectorAll('input[type="text"]').forEach(input => {
+                            input.value = "0";
+                        });
 
-        {% endif %}
-
-
+                    } else {
+                        orderStatus.innerHTML = `<h3>Status: ${data.status}</h3>`;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        </script>
     </div>
-
-    <script>
-        function increment(id) {
-            let element = document.getElementById(id);
-            let value = parseInt(element.value, 10);
-            value = isNaN(value) ? 0 : value;
-            value++;
-            element.value = value;
-        }
-
-        function decrement(id) {
-            let element = document.getElementById(id);
-            let value = parseInt(element.value, 10);
-            value = isNaN(value) ? 0 : value;
-            value = value > 0 ? value - 1 : 0;
-            element.value = value;
-        }
-    </script>
 </body>
 </html>

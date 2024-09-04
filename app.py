@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from menu_data import food_dict, drink_dict, dessert_dict
 from models import db, Order, OrderItem
 import json
@@ -30,9 +30,7 @@ def send_order_to_worker(order):
 
 @app.route("/")
 def index():
-    print("Food Dictionary:", food_dict)
-    print("Drink Dictionary:", drink_dict)
-    print("Dessert Dictionary:", dessert_dict)
+    # Render the main page
     return render_template("index.html", food_dict=food_dict, drink_dict=drink_dict, dessert_dict=dessert_dict)
 
 @app.route("/calculate", methods=["POST"])
@@ -96,53 +94,33 @@ def calculate():
     # Send the order to worker.py
     worker_response = send_order_to_worker(selected_items)
 
-    # handle worker response
+    # Handle worker response
     if worker_response["status"] == "Order Ready":
         print("Order is ready, generating receipt...")
-        # generate the receipt details
+        # Generate the receipt details
         receipt = {
             "order_number": order_number,
             "date": order.date,
             "time": order.time,
             "order_items": [
-                {"name": item.item_name, "quantitiy": item.quantitiy, "price": item.price} for item in order.items
+                {"name": item.item_name, "quantity": item.quantity, "price": item.price} for item in order.items
             ],
             "total": total,
             "vat": vat,
             "total_including_vat": total_including_vat
         }
         print("Receipt data:", receipt)
+
+        # Return JSON response for AJAX
+        return jsonify({
+            "status": "Order Ready",
+            "receipt": receipt
+        })
     else:
         print("Worker did not complete the order, response:", worker_response)
-
-    # Generate the receipt details
-    receipt = {
-        "order_number": order_number,
-        "date": order.date,
-        "time": order.time,
-        "order_items": [
-            {"name": item.item_name, "quantity": item.quantity, "price": item.price} for item in order.items
-        ],
-        "total": total,
-        "vat": vat,
-        "total_including_vat": total_including_vat
-    }
-    print("Receipt items:", receipt['order_items'])
-
-    return render_template(
-        "index.html",
-        food_dict=food_dict,
-        drink_dict=drink_dict,
-        dessert_dict=dessert_dict,
-        food_total=food_total,
-        drink_total=drink_total,
-        dessert_total=dessert_total,
-        total_including_vat=total_including_vat,
-        selected_items=selected_items,
-        preparation_details=worker_response.get("preparation_details", {}),
-        worker_response=worker_response["status"],
-        receipt=receipt if worker_response["status"] == "Order Ready" else None
-    )
+        return jsonify({
+            "status": worker_response["status"]
+        })
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -2,7 +2,7 @@ import sys
 import json
 import time
 
-# Preparation interval for each product
+
 preparation_times = {
     "Hamburger": 10, "Cheeseburger": 8, "Steak": 15, "Pizza": 12,
     "Tuna Sandwich": 7, "Cheese Sandwich": 5, "Tuna Salad": 6,
@@ -13,6 +13,8 @@ preparation_times = {
     "Milkshake": 5, "Baklava": 12, "Orange Cake": 8,
     "Fresh Fruits": 5, "Doughnuts": 9
 }
+
+
 
 # Worker remains idle
 worker_busy = False
