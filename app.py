@@ -18,15 +18,39 @@ with app.app_context():
     db.create_all()
 
 def send_order_to_worker(order):
-    # Sends the order to the worker
-    result = subprocess.run(["python3", "worker.py"], input=json.dumps(order), text=True, capture_output=True)
-    print("Raw worker output:", result.stdout.strip())
-    
-    if result.returncode == 0:
-        return json.loads(result.stdout.strip())
-    else:
-        print("Worker error output:", result.stderr.strip())
-        return {"status": "Error", "preparation_details": {}}
+    try:
+        # Sending the order as JSON to worker.py
+        result = subprocess.run(
+            ["python3", "worker.py"], 
+            input=json.dumps(order), 
+            text=True, 
+            capture_output=True
+        )
+
+        if result.returncode == 0:
+            # Expecting a JSON response from worker.py
+            worker_response = json.loads(result.stdout.strip())
+            return worker_response
+        else:
+            # Error in the subprocess, but return structured JSON
+            error_message = result.stderr.strip()
+            return {
+                "status": "Error",
+                "message": "Subprocess error",
+                "details": error_message
+            }
+    except json.JSONDecodeError as e:
+        return {
+            "status": "Error",
+            "message": "JSON parsing error",
+            "details": str(e)
+        }
+    except Exception as e:
+        return {
+            "status": "Error",
+            "message": "Unexpected error",
+            "details": str(e)
+        }
 
 @app.route("/")
 def index():
@@ -94,10 +118,8 @@ def calculate():
     # Send the order to worker.py
     worker_response = send_order_to_worker(selected_items)
 
-    # Handle worker response
     if worker_response["status"] == "Order Ready":
-        print("Order is ready, generating receipt...")
-        # Generate the receipt details
+        # Generate and return the receipt
         receipt = {
             "order_number": order_number,
             "date": order.date,
@@ -109,17 +131,18 @@ def calculate():
             "vat": vat,
             "total_including_vat": total_including_vat
         }
-        print("Receipt data:", receipt)
 
-        # Return JSON response for AJAX
+        # Return response as JSON if you're handling this with AJAX
         return jsonify({
             "status": "Order Ready",
             "receipt": receipt
         })
     else:
-        print("Worker did not complete the order, response:", worker_response)
+        # Handle the error response from worker.py
         return jsonify({
-            "status": worker_response["status"]
+            "status": worker_response["status"],
+            "message": worker_response.get("message", ""),
+            "details": worker_response.get("details", "")
         })
 
 if __name__ == "__main__":

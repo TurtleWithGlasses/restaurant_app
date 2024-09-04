@@ -15,7 +15,6 @@ preparation_times = {
 }
 
 
-
 # Worker remains idle
 worker_busy = False
 
@@ -24,26 +23,38 @@ def process_order(order):
 
     if worker_busy:
         print("Worker is busy")
-        return {"status":"BUSY"}
+        return {"status":"Error", "message": "Worker is busy"}
     
     worker_busy = True
     preparation_details = {}
 
     # Process each item in the order
-    for item, quantity in order.items():
-        if item in preparation_times:
-            item_time = preparation_times[item] * quantity
-            time.sleep(item_time)  # Simulate the preparation time
-            preparation_details[item] = "READY"  # Update status to READY
+    try:
+        for item, quantity in order.items():
+            if item in preparation_times:
+                item_time = preparation_times[item] * quantity
+                time.sleep(item_time)  # Simulate the preparation time
+                preparation_details[item] = "READY"  # Update status to READY
 
-    worker_busy = False
-    return {"status": "Order Ready", "preparation_details": preparation_details}
+        worker_busy = False
+        return {"status": "Order Ready", "preparation_details": preparation_details}
+    
+    except Exception as e:
+        return {"status": "Error", "message": str(e)}
 
 if __name__ == "__main__":
-    order_data = sys.stdin.read()
-    try:        
+    try:
+        # Read the input data from stdin and process it as JSON
+        order_data = sys.stdin.read()
         order = json.loads(order_data)
         result = process_order(order)
+        # Return the result as JSON
         print(json.dumps(result))
+
     except json.JSONDecodeError as e:
+        # In case of a JSON parsing error, return a JSON error response
+        print(json.dumps({"status": "Error", "message": "JSON parsing error", "details": str(e)}))
+
+    except Exception as e:
+        # Catch all other errors
         print(json.dumps({"status": "Error", "message": str(e)}))
